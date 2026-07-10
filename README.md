@@ -1,4 +1,5 @@
 RoomieSmart - Guía de Ejecución 🚀
+
 RoomieSmart es una plataforma integral (Backend, Web y Mobile) diseñada para conectar estudiantes universitarios con sus roomies ideales y gestionar finanzas compartidas.
 
 A continuación se detallan las instrucciones para levantar cada uno de los microservicios en un entorno de desarrollo local.
