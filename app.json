@@ -3,6 +3,7 @@
     "name": "roomiesmart-mobile",
     "slug": "roomiesmart-mobile",
     "version": "1.0.0",
+    "scheme": "roomiesmart",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,10 +22,20 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.rpchapi.roomiesmartmobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-web-browser",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4eefbb70-dabd-46bf-81e0-93bc399e1222"
+      }
     }
   }
 }

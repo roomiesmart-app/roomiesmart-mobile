@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 export interface UserSession {
   id: string;
@@ -7,19 +7,19 @@ export interface UserSession {
   departmentId?: string | null;
 }
 
-const SESSION_KEY = '@roomiesmart_session';
+export interface AuthSessionData {
+  idToken: string;
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt: number;
+  user: UserSession;
+}
 
-export const saveSession = async (user: UserSession) => {
-  try {
-    await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(user));
-  } catch (error) {
-    console.error('Error guardando la sesión', error);
-  }
-};
+const SESSION_KEY = 'roomiesmart_session';
 
-export const getSession = async (): Promise<UserSession | null> => {
+const getAuthSessionData = async (): Promise<AuthSessionData | null> => {
   try {
-    const session = await AsyncStorage.getItem(SESSION_KEY);
+    const session = await SecureStore.getItemAsync(SESSION_KEY);
     return session ? JSON.parse(session) : null;
   } catch (error) {
     console.error('Error cargando la sesión', error);
@@ -27,9 +27,38 @@ export const getSession = async (): Promise<UserSession | null> => {
   }
 };
 
+export const saveSession = async (session: AuthSessionData) => {
+  try {
+    await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(session));
+  } catch (error) {
+    console.error('Error guardando la sesión', error);
+  }
+};
+
+// Mantiene la firma histórica (solo el perfil) para no tocar las pantallas que ya consumen getSession().
+export const getSession = async (): Promise<UserSession | null> => {
+  const session = await getAuthSessionData();
+  return session?.user ?? null;
+};
+
+type AuthTokens = Pick<AuthSessionData, 'idToken' | 'accessToken' | 'refreshToken' | 'expiresAt'>;
+
+export const getAuthTokens = async (): Promise<AuthTokens | null> => {
+  const session = await getAuthSessionData();
+  if (!session) return null;
+  const { idToken, accessToken, refreshToken, expiresAt } = session;
+  return { idToken, accessToken, refreshToken, expiresAt };
+};
+
+export const updateSessionTokens = async (tokens: AuthTokens) => {
+  const session = await getAuthSessionData();
+  if (!session) return;
+  await saveSession({ ...session, ...tokens });
+};
+
 export const clearSession = async () => {
   try {
-    await AsyncStorage.removeItem(SESSION_KEY);
+    await SecureStore.deleteItemAsync(SESSION_KEY);
   } catch (error) {
     console.error('Error limpiando la sesión', error);
   }

@@ -1,31 +1,59 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { AuthRepository } from '../../infrastructure/AuthRepository';
 import { saveSession } from '../../core/session';
+import { useKindeLogin, decodeIdToken } from '../../core/kindeAuth';
 
 export const LoginScreen = ({ navigation }: any) => {
-  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login, ready } = useKindeLogin();
 
   const handleLogin = async () => {
-    const cleanEmail = email.trim().toLowerCase();
-    
-    if (!cleanEmail.endsWith('@uce.edu.ec')) {
-      Alert.alert('Error', 'El acceso es exclusivo para correos institucionales @uce.edu.ec');
-      return;
-    }
-
     setLoading(true);
     try {
-      const response = await AuthRepository.checkStatus(cleanEmail);
-      
-      if (response.exists && response.user) {
-        // Guardar sesión y redirigir
-        await saveSession(response.user);
-        navigation.replace('MainApp');
-      } else {
-        Alert.alert('No registrado', 'Tu perfil no existe. Por favor, regístrate en la plataforma web primero para completar tu test de afinidad.');
+      const tokens = await login();
+      if (!tokens) {
+        // El usuario canceló el flujo de Kinde.
+        return;
       }
+
+      const claims = decodeIdToken(tokens.idToken);
+      const email = (claims.email || '').trim().toLowerCase();
+
+      if (!email.endsWith('@uce.edu.ec')) {
+        Alert.alert('Error', 'El acceso es exclusivo para correos institucionales @uce.edu.ec');
+        return;
+      }
+
+      const status = await AuthRepository.checkStatus(email);
+
+      if (!status.exists) {
+        Alert.alert('No registrado', 'Tu perfil no existe. Por favor, regístrate en la plataforma web primero para completar tu test de afinidad.');
+        return;
+      }
+
+      await saveSession({
+        ...tokens,
+        user: {
+          id: claims.sub,
+          name: claims.given_name || claims.name || email.split('@')[0],
+          email,
+          departmentId: null,
+        },
+      });
+
+      const profile = await AuthRepository.getMe();
+      await saveSession({
+        ...tokens,
+        user: {
+          id: profile.id,
+          name: claims.given_name || claims.name || email.split('@')[0],
+          email: profile.email,
+          departmentId: profile.departmentId ?? null,
+        },
+      });
+
+      navigation.replace('MainApp');
     } catch (error: any) {
       Alert.alert('Error de conexión', error.message || 'No se pudo verificar el usuario.');
     } finally {
@@ -42,17 +70,7 @@ export const LoginScreen = ({ navigation }: any) => {
         <Text style={styles.title}>Roomie<Text style={styles.titleHighlight}>Smart</Text></Text>
         <Text style={styles.subtitle}>Tu vida universitaria, compartida.</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Correo UCE (ej. user@uce.edu.ec)"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-          placeholderTextColor="#999"
-        />
-
-        <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={loading}>
+        <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={loading || !ready}>
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
