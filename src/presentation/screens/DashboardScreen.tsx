@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { fetchApi } from '../../core/api';
+import { MatchmakingRepository } from '../../infrastructure/MatchmakingRepository';
 import { getSession, clearSession, UserSession } from '../../core/session';
 import { ProfileCard, ProfileData } from '../components/ProfileCard';
 import { FilterModal, MatchmakingFilters } from '../components/FilterModal';
@@ -53,10 +53,7 @@ export const DashboardScreen = ({ navigation }: any) => {
   const loadNaturalMatches = async (userId: string) => {
     setLoadingNatural(true);
     try {
-      const response = await fetchApi('/api/v1/identity/matchmaking-profiles', {
-        method: 'POST',
-        body: JSON.stringify({ userId, filters: {} }),
-      });
+      const response = await MatchmakingRepository.getProfiles({ userId, filters: {} });
       setNaturalProfiles(formatProfiles(response));
     } catch (error) {
       console.error('Error cargando matches naturales', error);
@@ -70,10 +67,7 @@ export const DashboardScreen = ({ navigation }: any) => {
     setLoadingFiltered(true);
     setHasSearched(true);
     try {
-      const response = await fetchApi('/api/v1/identity/matchmaking-profiles', {
-        method: 'POST',
-        body: JSON.stringify({ userId: session.id, filters }),
-      });
+      const response = await MatchmakingRepository.getProfiles({ userId: session.id, filters });
       setFilteredProfiles(formatProfiles(response));
     } catch (error) {
       console.error('Error aplicando filtros', error);
@@ -88,10 +82,9 @@ export const DashboardScreen = ({ navigation }: any) => {
   };
 
   const openChat = (profile: ProfileData) => {
-    if (!session || profile.id === session.id) {
-      if (profile.id === session.id) {
-        console.log("No puedes enviarte mensajes a ti mismo.");
-      }
+    if (!session) return;
+    if (profile.id === session.id) {
+      console.log("No puedes enviarte mensajes a ti mismo.");
       return;
     }
     navigation.navigate('Chat', {

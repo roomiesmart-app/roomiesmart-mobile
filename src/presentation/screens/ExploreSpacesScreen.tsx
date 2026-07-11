@@ -1,20 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { fetchApi } from '../../core/api';
+import { SpaceRepository, PublishedSpace } from '../../infrastructure/SpaceRepository';
 import { getSession, UserSession } from '../../core/session';
-
-interface PublishedSpace {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  neighborhood: string;
-  space_type: string;
-  photos: string[];
-  owner_id: string;
-  owner_name?: string;
-}
 
 export const ExploreSpacesScreen = () => {
   const navigation = useNavigation<any>();
@@ -36,8 +24,8 @@ export const ExploreSpacesScreen = () => {
 
   const loadSpaces = async () => {
     try {
-      const response = await fetchApi('/api/v1/roomies/spaces');
-      setSpaces(response.data || []);
+      const spacesData = await SpaceRepository.getSpaces();
+      setSpaces(spacesData);
     } catch (error) {
       console.error('Error loading spaces', error);
     } finally {
@@ -50,10 +38,7 @@ export const ExploreSpacesScreen = () => {
     setJoinStatus((prev) => ({ ...prev, [space.id]: 'sending' }));
     
     try {
-      await fetchApi(`/api/v1/roomies/spaces/${space.id}/requests`, {
-        method: 'POST',
-        body: JSON.stringify({ requesterId: session.id })
-      });
+      await SpaceRepository.requestToJoin(space.id, session.id);
       setJoinStatus((prev) => ({ ...prev, [space.id]: 'sent' }));
       Alert.alert('Éxito', 'Solicitud enviada correctamente');
     } catch (error: any) {
@@ -68,8 +53,8 @@ export const ExploreSpacesScreen = () => {
   };
 
   const renderItem = ({ item }: { item: PublishedSpace }) => {
-    const imageUri = item.photos && item.photos.length > 0 
-      ? item.photos[0] 
+    const imageUri = item.images && item.images.length > 0 
+      ? item.images[0] 
       : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=600';
     
     const status = joinStatus[item.id];
@@ -79,8 +64,8 @@ export const ExploreSpacesScreen = () => {
         <Image source={{ uri: imageUri }} style={styles.cardImage} />
         <View style={styles.cardContent}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardType}>{item.space_type}</Text>
-            <Text style={styles.cardPrice}>${item.price}</Text>
+            <Text style={styles.cardType}>{item.spaceType}</Text>
+            <Text style={styles.cardPrice}>${item.monthlyPrice}</Text>
           </View>
           <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
           <Text style={styles.cardLocation}>📍 {item.neighborhood || 'Ubicación no especificada'}</Text>

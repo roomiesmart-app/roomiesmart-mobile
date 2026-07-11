@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, Image, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
-import { fetchApi } from '../../core/api';
+import { SpaceRepository } from '../../infrastructure/SpaceRepository';
 import { getSession } from '../../core/session';
 
 export const PublishSpaceScreen = () => {
@@ -54,29 +54,34 @@ export const PublishSpaceScreen = () => {
       // Nota: En producción, deberías subir `photos` a un Storage (Supabase) 
       // y enviar las URLs públicas generadas al backend.
       // Para este demo, usaremos un placeholder genérico o la URI local.
-      const uploadedPhotoUrls = photos.length > 0 
-        ? photos // En un entorno local, las URIs de archivo no se verán en otros dispositivos.
-        : ['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=600'];
+      let uploadedPhotoUrls = [...photos];
+      const defaultPhotos = [
+        'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=600',
+        'https://images.unsplash.com/photo-1502672260266-1c1f5523a5b3?auto=format&fit=crop&q=80&w=600',
+        'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=600',
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80&w=600',
+        'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&q=80&w=600'
+      ];
+      while (uploadedPhotoUrls.length < 5) {
+        uploadedPhotoUrls.push(defaultPhotos[uploadedPhotoUrls.length % 5]);
+      }
 
       const payload = {
         title,
         description,
-        price: parseFloat(price),
+        monthlyPrice: parseFloat(price),
         neighborhood,
         cityId,
-        address: neighborhood, // Simplificado
-        space_type: 'Habitación compartida', // Simplificado
+        locationAddress: neighborhood, // Simplificado
+        spaceType: 'Habitación compartida', // Simplificado
         ownerId: session.id,
-        photos: uploadedPhotoUrls,
-        common_areas: ['Cocina', 'Sala'],
+        images: uploadedPhotoUrls,
+        commonAreas: ['Cocina', 'Sala'],
         amenities: ['Wi-Fi'],
         status: 'published'
       };
 
-      await fetchApi('/api/v1/roomies/spaces', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
+      await SpaceRepository.publishSpace(payload);
 
       Alert.alert('Éxito', '¡Tu espacio ha sido publicado correctamente!', [
         { text: 'OK', onPress: () => navigation.goBack() }

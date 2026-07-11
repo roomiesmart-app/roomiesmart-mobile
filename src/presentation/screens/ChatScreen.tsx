@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { fetchApi } from '../../core/api';
+import { ChatRepository } from '../../infrastructure/ChatRepository';
 
 interface ChatMessage {
   id: string;
@@ -29,10 +29,7 @@ export const ChatScreen = ({ route, navigation }: any) => {
         return; // No intentar crear conversación consigo mismo
       }
       try {
-        const response = await fetchApi('/api/v1/roomies/conversations', {
-          method: 'POST',
-          body: JSON.stringify({ currentUserId, targetUserId })
-        });
+        const response = await ChatRepository.getOrCreateConversation({ currentUserId, targetUserId });
         setConversationId(response.conversationId);
       } catch (error) {
         console.error('Error iniciando conversación', error);
@@ -48,7 +45,7 @@ export const ChatScreen = ({ route, navigation }: any) => {
     // 2) Cargar mensajes iniciales
     const loadMessages = async () => {
       try {
-        const response = await fetchApi(`/api/v1/roomies/conversations/${conversationId}/messages`);
+        const response = await ChatRepository.getMessages(conversationId);
         const data = Array.isArray(response) ? response : [];
         setMessages([...data].reverse());
       } catch (error) {
@@ -63,7 +60,7 @@ export const ChatScreen = ({ route, navigation }: any) => {
     // 3) Polling cada 3 segundos como fallback para tiempo real
     timerRef.current = setInterval(async () => {
       try {
-        const response = await fetchApi(`/api/v1/roomies/conversations/${conversationId}/messages?limit=20`);
+        const response = await ChatRepository.getMessages(conversationId, 20);
         const data = Array.isArray(response) ? response : [];
         setMessages([...data].reverse());
       } catch (e) {}
@@ -90,10 +87,7 @@ export const ChatScreen = ({ route, navigation }: any) => {
     setDraft('');
 
     try {
-      await fetchApi(`/api/v1/roomies/conversations/${conversationId}/messages`, {
-        method: 'POST',
-        body: JSON.stringify({ senderId: currentUserId, content })
-      });
+      await ChatRepository.sendMessage(conversationId, currentUserId, content);
       // El próximo polling sincronizará los verdaderos IDs
     } catch (error) {
       console.error('Error enviando mensaje', error);

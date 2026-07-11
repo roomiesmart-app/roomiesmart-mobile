@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { fetchApi } from '../../core/api';
+import { ChatRepository } from '../../infrastructure/ChatRepository';
 import { getSession, UserSession } from '../../core/session';
 
 interface InboxItem {
@@ -40,7 +40,7 @@ export const InboxScreen = () => {
 
   const loadInbox = async (userId: string) => {
     try {
-      const response = await fetchApi(`/api/v1/roomies/conversations/user/${userId}`);
+      const response = await ChatRepository.getConversationsByUser(userId);
       setInbox(response.data || []);
     } catch (error) {
       console.error('Error loading inbox', error);
@@ -83,8 +83,13 @@ export const InboxScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerLabel}>Mensajes</Text>
-        <Text style={styles.headerTitle}>Bandeja de Entrada</Text>
+        <Text style={styles.headerTitle}>Mensajes</Text>
+        <TouchableOpacity 
+          style={styles.requestsBtn}
+          onPress={() => navigation.navigate('SpaceRequests')}
+        >
+          <Text style={styles.requestsBtnText}>Ver Solicitudes</Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -121,6 +126,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   headerLabel: {
     fontSize: 12,
@@ -131,9 +139,20 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#3B241C',
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1C1C1C',
+  },
+  requestsBtn: {
+    backgroundColor: '#8C3A27',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  requestsBtnText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   emptyContainer: {
     margin: 20,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { fetchApi } from '../../core/api';
+import { AuthRepository } from '../../infrastructure/AuthRepository';
 import { saveSession } from '../../core/session';
 
 export const LoginScreen = ({ navigation }: any) => {
@@ -17,7 +17,7 @@ export const LoginScreen = ({ navigation }: any) => {
 
     setLoading(true);
     try {
-      const response = await fetchApi(`/api/v1/identity/check-status/${cleanEmail}`);
+      const response = await AuthRepository.checkStatus(cleanEmail);
       
       if (response.exists && response.user) {
         // Guardar sesión y redirigir

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Modal, TextInput, Alert } from 'react-native';
-import { fetchApi } from '../../core/api';
+import { FinanceRepository } from '../../infrastructure/FinanceRepository';
+import { AuthRepository } from '../../infrastructure/AuthRepository';
 import { getSession, UserSession } from '../../core/session';
 
 interface Expense {
@@ -28,7 +29,7 @@ export const FinanceScreen = () => {
         setSession(user);
         try {
           // Fetch the latest status to see if they just created or joined a space
-          const response = await fetchApi(`/api/v1/identity/check-status/${user.email}`);
+          const response = await AuthRepository.checkStatus(user.email);
           if (response.exists && response.user?.departmentId) {
             setDepartmentId(response.user.departmentId);
             loadExpenses(response.user.departmentId);
@@ -51,7 +52,7 @@ export const FinanceScreen = () => {
 
   const loadExpenses = async (deptId: string) => {
     try {
-      const response = await fetchApi(`/api/expenses/${deptId}`);
+      const response = await FinanceRepository.getExpenses(deptId);
       // Asumiendo que response es un array o tiene una propiedad data
       setExpenses(Array.isArray(response) ? response : response.data || []);
     } catch (error) {
@@ -66,14 +67,11 @@ export const FinanceScreen = () => {
     
     setSubmitting(true);
     try {
-      await fetchApi('/api/expenses', {
-        method: 'POST',
-        body: JSON.stringify({
-          title: expenseTitle,
-          amount: parseFloat(expenseAmount),
-          paidBy: session.id,
-          departmentId,
-        })
+      await FinanceRepository.addExpense({
+        description: expenseTitle,
+        amount: parseFloat(expenseAmount),
+        payerId: session.id,
+        departmentId,
       });
       
       Alert.alert('Éxito', 'Gasto añadido');
