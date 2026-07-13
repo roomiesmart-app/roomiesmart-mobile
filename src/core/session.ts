@@ -56,6 +56,12 @@ export const updateSessionTokens = async (tokens: AuthTokens) => {
   await saveSession({ ...session, ...tokens });
 };
 
+export const updateSessionUser = async (user: UserSession) => {
+  const session = await getAuthSessionData();
+  if (!session) return;
+  await saveSession({ ...session, user });
+};
+
 export const clearSession = async () => {
   try {
     await SecureStore.deleteItemAsync(SESSION_KEY);

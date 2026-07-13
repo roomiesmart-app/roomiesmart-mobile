@@ -3,10 +3,12 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } fr
 import { AuthRepository } from '../../infrastructure/AuthRepository';
 import { saveSession } from '../../core/session';
 import { useKindeLogin, decodeIdToken } from '../../core/kindeAuth';
+import { useOnboarding } from '../../core/onboarding';
 
 export const LoginScreen = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
   const { login, ready } = useKindeLogin();
+  const { updateFormData } = useOnboarding();
 
   const handleLogin = async () => {
     setLoading(true);
@@ -28,7 +30,23 @@ export const LoginScreen = ({ navigation }: any) => {
       const status = await AuthRepository.checkStatus(email);
 
       if (!status.exists) {
-        Alert.alert('No registrado', 'Tu perfil no existe. Por favor, regístrate en la plataforma web primero para completar tu test de afinidad.');
+        // Guarda una sesión temporal (solo tokens) para que las llamadas autenticadas
+        // del onboarding (POST /identity/onboarding, GET /identity/me) funcionen.
+        await saveSession({
+          ...tokens,
+          user: {
+            id: claims.sub,
+            name: claims.given_name || claims.name || email.split('@')[0],
+            email,
+            departmentId: null,
+          },
+        });
+        updateFormData({
+          name: claims.given_name || claims.name || email.split('@')[0],
+          email,
+          externalId: claims.sub,
+        });
+        navigation.replace('OnboardingIdentity');
         return;
       }
 

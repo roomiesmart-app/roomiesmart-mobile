@@ -5,6 +5,7 @@ export interface KindeProfile {
   id: string;
   email: string;
   departmentId?: string | null;
+  monthlyBudget?: number;
 }
 
 export class AuthRepository {
@@ -16,5 +17,12 @@ export class AuthRepository {
   static async getMe(): Promise<KindeProfile> {
     const response = await fetchApi('/api/v1/identity/me');
     return response.data;
+  }
+
+  static async completeOnboarding(payload: any): Promise<any> {
+    return await fetchApi('/api/v1/identity/onboarding', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
   }
 }

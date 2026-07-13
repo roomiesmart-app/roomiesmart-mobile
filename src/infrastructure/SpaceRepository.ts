@@ -12,6 +12,21 @@ export interface PublishedSpace {
   owner_name?: string;
 }
 
+export interface DepartmentMember {
+  id: string;
+  department_id: string;
+  user_id: string;
+  role: 'owner' | 'member';
+  joined_at: string;
+  users?: { id: string; email: string };
+}
+
+export interface DepartmentMembersInfo {
+  members: DepartmentMember[];
+  count: number;
+  sharedFinancesEnabled: boolean;
+}
+
 export class SpaceRepository {
   static async getSpaces(): Promise<PublishedSpace[]> {
     const response = await fetchApi('/api/v1/roomies/spaces');
@@ -41,5 +56,14 @@ export class SpaceRepository {
       method: 'PATCH',
       body: JSON.stringify({ resolverId, action })
     });
+  }
+
+  static async getUserDepartments(userId: string): Promise<PublishedSpace[]> {
+    const response = await fetchApi(`/api/v1/roomies/users/${userId}/departments`);
+    return response.data || [];
+  }
+
+  static async getDepartmentMembers(departmentId: string): Promise<DepartmentMembersInfo> {
+    return await fetchApi(`/api/v1/roomies/departments/${departmentId}/members`);
   }
 }

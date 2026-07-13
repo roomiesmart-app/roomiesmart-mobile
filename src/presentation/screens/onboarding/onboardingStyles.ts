@@ -1,0 +1,153 @@
+import { StyleSheet } from 'react-native';
+
+export const onboardingStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FDF9F8',
+  },
+  content: {
+    padding: 20,
+    paddingTop: 60,
+    paddingBottom: 40,
+  },
+  stepLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#A3513D',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    marginBottom: 6,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#3B241C',
+    marginBottom: 14,
+  },
+  progressTrack: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#F1DED6',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 24,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#A3513D',
+    borderRadius: 3,
+  },
+  section: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: '#F1DED6',
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#3B241C',
+    marginBottom: 10,
+  },
+  input: {
+    backgroundColor: '#FDF8F6',
+    borderWidth: 1,
+    borderColor: '#E5D1C6',
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#333',
+    marginBottom: 16,
+  },
+  inputDisabled: {
+    backgroundColor: '#F0F0F0',
+    color: '#888',
+  },
+  optionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  optionBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5D1C6',
+    backgroundColor: '#fff',
+    marginBottom: 8,
+  },
+  optionBtnActive: {
+    backgroundColor: '#8C3A27',
+    borderColor: '#8C3A27',
+  },
+  optionText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#3B241C',
+  },
+  optionTextActive: {
+    color: '#fff',
+  },
+  errorText: {
+    color: '#C0392B',
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#F1DED6',
+  },
+  backText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#827471',
+  },
+  continueBtn: {
+    backgroundColor: '#8C3A27',
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 20,
+  },
+  continueBtnDisabled: {
+    backgroundColor: '#ccc',
+  },
+  continueBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  stepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  stepperBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#8C3A27',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperBtnText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  stepperValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#3B241C',
+  },
+});

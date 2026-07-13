@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, Image, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { SpaceRepository } from '../../infrastructure/SpaceRepository';
+import { CatalogRepository } from '../../infrastructure/CatalogRepository';
 import { getSession } from '../../core/session';
 
 export const PublishSpaceScreen = () => {
@@ -13,9 +14,23 @@ export const PublishSpaceScreen = () => {
   const [neighborhood, setNeighborhood] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [cityId, setCityId] = useState<string | null>(null);
+  const [loadingCities, setLoadingCities] = useState(true);
 
-  // Quito, Guayaquil, Cuenca (Hardcoded de la BD para simplicidad del demo)
-  const cityId = 'edd2c2ec-d569-4572-84d5-45911d1b0939'; 
+  useEffect(() => {
+    const loadCity = async () => {
+      try {
+        const cities = await CatalogRepository.getCities();
+        const quito = cities.find(c => c.name.toLowerCase() === 'quito');
+        setCityId((quito || cities[0])?.id ?? null);
+      } catch (error) {
+        console.error('Error cargando ciudades', error);
+      } finally {
+        setLoadingCities(false);
+      }
+    };
+    loadCity();
+  }, []);
 
   const pickImage = async () => {
     if (photos.length >= 3) {
@@ -43,6 +58,10 @@ export const PublishSpaceScreen = () => {
   const handleSubmit = async () => {
     if (!title || !description || !price || !neighborhood) {
       Alert.alert('Error', 'Por favor llena todos los campos obligatorios.');
+      return;
+    }
+    if (!cityId) {
+      Alert.alert('Error', 'No se pudo cargar la ciudad. Intenta de nuevo en un momento.');
       return;
     }
 
@@ -168,12 +187,12 @@ export const PublishSpaceScreen = () => {
         </ScrollView>
       </View>
 
-      <TouchableOpacity 
-        style={[styles.submitBtn, loading && styles.submitBtnDisabled]} 
+      <TouchableOpacity
+        style={[styles.submitBtn, (loading || loadingCities) && styles.submitBtnDisabled]}
         onPress={handleSubmit}
-        disabled={loading}
+        disabled={loading || loadingCities}
       >
-        {loading ? (
+        {loading || loadingCities ? (
           <ActivityIndicator color="#fff" />
         ) : (
           <Text style={styles.submitBtnText}>Publicar Espacio</Text>

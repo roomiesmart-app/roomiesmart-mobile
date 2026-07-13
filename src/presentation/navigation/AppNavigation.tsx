@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home, Compass, MessageCircle, DollarSign } from 'lucide-react-native';
 
 import { getSession } from '../../core/session';
+import { OnboardingProvider } from '../../core/onboarding';
 import { LoginScreen } from '../screens/LoginScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import { ChatScreen } from '../screens/ChatScreen';
@@ -13,6 +14,10 @@ import { InboxScreen } from '../screens/InboxScreen';
 import { FinanceScreen } from '../screens/FinanceScreen';
 import { PublishSpaceScreen } from '../screens/PublishSpaceScreen';
 import { SpaceRequestsScreen } from '../screens/SpaceRequestsScreen';
+import { OnboardingIdentityScreen } from '../screens/onboarding/OnboardingIdentityScreen';
+import { OnboardingLifestyleScreen } from '../screens/onboarding/OnboardingLifestyleScreen';
+import { OnboardingSocialScreen } from '../screens/onboarding/OnboardingSocialScreen';
+import { OnboardingFinancialScreen } from '../screens/onboarding/OnboardingFinancialScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -73,13 +78,19 @@ export function AppNavigation() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="MainApp" component={TabNavigator} />
-        <Stack.Screen name="Chat" component={ChatScreen} />
-        <Stack.Screen name="PublishSpace" component={PublishSpaceScreen} options={{ presentation: 'modal' }} />
-        <Stack.Screen name="SpaceRequests" component={SpaceRequestsScreen} />
-      </Stack.Navigator>
+      <OnboardingProvider>
+        <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="OnboardingIdentity" component={OnboardingIdentityScreen} />
+          <Stack.Screen name="OnboardingLifestyle" component={OnboardingLifestyleScreen} />
+          <Stack.Screen name="OnboardingSocial" component={OnboardingSocialScreen} />
+          <Stack.Screen name="OnboardingFinancial" component={OnboardingFinancialScreen} />
+          <Stack.Screen name="MainApp" component={TabNavigator} />
+          <Stack.Screen name="Chat" component={ChatScreen} />
+          <Stack.Screen name="PublishSpace" component={PublishSpaceScreen} options={{ presentation: 'modal' }} />
+          <Stack.Screen name="SpaceRequests" component={SpaceRequestsScreen} />
+        </Stack.Navigator>
+      </OnboardingProvider>
     </NavigationContainer>
   );
 }
